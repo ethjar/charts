@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "geth.fullname" . }}
+  labels:
+    app: {{ template "geth.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    app: {{ template "geth.name" . }}
+    release: {{ .Release.Name }}
+  ports:
+  - protocol: TCP
+    port: 8545
+    targetPort: 8545

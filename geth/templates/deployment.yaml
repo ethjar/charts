@@ -1,0 +1,63 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "geth.fullname" . }}
+  labels:
+    app: {{ template "geth.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: {{ template "geth.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: app
+                operator: NotIn
+                values:
+                - {{ template "geth.name" . }}
+      containers:
+      - name: geth
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        args: [
+          "--rpc", "--rpcaddr", "0.0.0.0",
+          "--datadir", "/data/",
+          "--nousb", "--verbosity", "2"]
+        ports:
+          - containerPort: 8545
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8545
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8545
+        resources:
+          requests:
+            cpu: 1
+            memory: 4G
+          limits:
+            cpu: 2
+            memory: 4G
+        volumeMounts:
+        - mountPath: "/data/"
+          name: "ssd"
+
+      volumes:
+      - name: "ssd"
+        hostPath:
+          path: {{ .Values.hostPath }}

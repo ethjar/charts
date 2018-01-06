@@ -1,0 +1,54 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-ethminer
+  labels:
+    app: ethminer
+    heritage: {{ .Release.Service }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  serviceName: {{ template "fullname" . }}
+  selector:
+    matchLabels:
+      app: ethminer
+      heritage: {{ .Release.Service }}
+      chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: ethminer
+        heritage: {{ .Release.Service }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: ethminer
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        resources:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+            nvidia.com/gpu: 1
+          limits:
+            cpu: 100m
+            memory: 128Mi
+            nvidia.com/gpu: 1
+        args:
+          - -RH
+          - -SP
+          - "1"
+          - -S
+          - {{ .Values.pool }}
+          - -O
+          - {{ .Values.wallet }}.$(POD_NAME)
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+  updateStrategy:
+    type: RollingUpdate

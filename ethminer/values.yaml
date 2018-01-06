@@ -1,0 +1,7 @@
+replicas: 6
+image:
+  repository: anthonytatowicz/eth-cuda-miner@sha256
+  tag: 4ebc2d2c4adecf2895730fe0132e25a7fc3f9619225ec79386bc5591f49a3b01
+  pullPolicy: IfNotPresent
+pool: eth-eu1.nanopool.org:9999
+wallet: 0x007def91599d177642ed6b83ac29c68ca01bd006
